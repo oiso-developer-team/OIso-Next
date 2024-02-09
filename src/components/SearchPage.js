@@ -1,4 +1,5 @@
-import React, { useContext } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
+import axios from 'axios';
 import {
     FluentProvider,
     makeStyles,
@@ -8,6 +9,12 @@ import {
     Title3,
     Tab,
     TabList,
+    Skeleton,
+    SkeletonItem,
+    SkeletonProps,
+    Divider,
+    Link,
+    Body2,
 } from "@fluentui/react-components";
 import {
     MicRegular,
@@ -49,12 +56,12 @@ const useStyles = makeStyles({
         width: '50%',
     },
     root: {
-        width: '100%',
+        maxWidth: '83%',
+        width: '85%',
         // alignItems: "flex-start",
         display: "flex",
         flexDirection: "column",
         justifyContent: "flex-start",
-        transform: 'translateX(-52%)',
         // rowGap: "20px",
         // paddingLeft: '500px',
     },
@@ -100,10 +107,31 @@ const AirplaneTakeOff = bundleIcon(
 );
 const TimeAndWeather = bundleIcon(TimeAndWeatherFilled, TimeAndWeatherRegular);
 
+export const LoadingBar = (props) => (
+    <Skeleton>
+        <SkeletonItem {...props} />
+    </Skeleton>
+);
+
+export const LoadingBlock = (props) => (
+    <>
+        <LoadingBar size={28} style={{ width: '25%' }} />
+        <div style={{ height: '8px' }}></div>
+        <LoadingBar size={16} style={{ width: '60%' }} />
+        <div style={{ height: '6px' }}></div>
+        <LoadingBar size={16} style={{ width: '60%' }} />
+        <div style={{ height: '6px' }}></div>
+        <LoadingBar size={16} style={{ width: '60%' }} />
+        <div style={{ height: '15px' }}></div>
+    </>
+);
+
 const SearchPage = () => {
     const styles = useStyles();
     const theme = useContext(ThemeContext);
     const [searchTerm, setSearchTerm] = React.useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [hasSearched, setHasSearched] = useState(false);
     // 将请求参数里的q参数解码后赋值给searchTerm
     React.useEffect(() => {
         const url = new URL(window.location.href);
@@ -112,7 +140,27 @@ const SearchPage = () => {
             setSearchTerm(decodeURIComponent(q));
         }
     }, []);
-    
+
+    useEffect(() => {
+        const fetchResults = async () => {
+            if (!searchTerm) {
+                return;
+            }
+            if (hasSearched) {
+                return;
+            }
+            try {
+                setHasSearched(true);
+                const response = await axios.get(`${process.env.REACT_APP_API_ENDPOINT}/search?q=${searchTerm}`);
+                setSearchResults(response.data);
+            } catch (error) {
+                console.error('Failed to fetch search results:', error);
+            }
+        };
+
+        fetchResults();
+    }, [searchTerm]);
+
     const [selectedValue, setSelectedValue] =
         React.useState("general");
 
@@ -127,58 +175,38 @@ const SearchPage = () => {
         window.location.href = searchUrl;
     };
 
-    // Dummy search results data
-    const searchResults = [
-        "Result 1: Lorem ipsum dolor sit amet",
-        "Result 2: Consectetur adipiscing elit",
-        "Result 3: Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
-        "Result 1: Lorem ipsum dolor sit amet",
-        "Result 2: Consectetur adipiscing elit",
-        "Result 3: Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
-        "Result 1: Lorem ipsum dolor sit amet",
-        "Result 2: Consectetur adipiscing elit",
-        "Result 3: Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
-        "Result 1: Lorem ipsum dolor sit amet",
-        "Result 2: Consectetur adipiscing elit",
-        "Result 3: Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
-        "Result 1: Lorem ipsum dolor sit amet",
-        "Result 2: Consectetur adipiscing elit",
-        "Result 3: Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
-        "Result 1: Lorem ipsum dolor sit amet",
-        "Result 2: Consectetur adipiscing elit",
-        "Result 3: Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
-        "Result 1: Lorem ipsum dolor sit amet",
-        "Result 2: Consectetur adipiscing elit",
-        "Result 3: Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
-        "Result 1: Lorem ipsum dolor sit amet",
-        "Result 2: Consectetur adipiscing elit",
-        "Result 3: Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
-        "Result 1: Lorem ipsum dolor sit amet",
-        "Result 2: Consectetur adipiscing elit",
-        "Result 3: Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
-        "Result 1: Lorem ipsum dolor sit amet",
-        "Result 2: Consectetur adipiscing elit",
-        "Result 3: Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
-    ];
 
     const General = React.memo(() => (
-        <div role="tabpanel" aria-labelledby="General">
-            <div>
-                <h2>Search Results</h2>
-                {searchResults.map((result, index) => (
-                    <div key={index} className={styles.resultItem}>
-                        {result}
-                    </div>
-                ))}
-                <Button style={{ marginTop: '20px' }} size="medium">Back to Search</Button>
+        <div style={{ textAlign: "left" }}>
+            {searchResults.length === 0 ? (
+                <>
+                    <div height='5px'></div>
+                    <LoadingBlock />
+                    <LoadingBlock />
+                    <LoadingBlock />
+                    <LoadingBlock />
+                    <LoadingBlock />
+                    <LoadingBlock />
+                    <LoadingBlock />
+                </>
+            ): (
+                    searchResults.map((result, index) => (
+            <div key={index} className={styles.resultItem} style={{ textAlign: "left" }}>
+                <Link href={result.link} target="_blank" rel="noreferrer">
+                    <Title3>{result.title}</Title3>
+                </Link>
+                <br />
+                <Body2>{result.content}</Body2>
             </div>
+            ))
+            )}
         </div>
     ));
 
     return (
         <FluentProvider theme={theme}>
             <div className={styles.container}>
-                <div className={styles.searchContainer} style={{ width: '40%', transform: 'translateX(-72%)', marginTop: '15px' }}>
+                <div className={styles.searchContainer} style={{ width: '50%', transform: 'translateX(-48%)', marginTop: '15px' }}>
                     <Title3 font="numeric" weight="bold" style={{
                         background: 'linear-gradient(to right, blue, purple)',
                         WebkitBackgroundClip: 'text',
@@ -206,13 +234,15 @@ const SearchPage = () => {
                         value={searchTerm}
                     />
                 </div>
-                <div className={styles.root } style={{ width: '40%' }}>
+                <div className={styles.root}>
                     <TabList selectedValue={selectedValue} onTabSelect={onTabSelect} appearance="subtle">
                         <Tab id="General" icon={<Globe />} value="general">
                             综合
                         </Tab>
                     </TabList>
-                    <div className={styles.panels}>
+                    <Divider />
+                    <div style={{ height: '10px' }}></div>
+                    <div style={{ textAlign: "left" }}>
                         {selectedValue === "general" && <General />}
                     </div>
                 </div>

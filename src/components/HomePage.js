@@ -69,17 +69,19 @@ export default function HomePage() {
         <FluentProvider theme={theme}>
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', transform: 'translateY(-10%)' }} className={styles.container}>
                 <Display font="numeric" weight="bold" style={{
-                    background: 'linear-gradient(to right, blue, purple)',
+                    background: '-webkit-linear-gradient(120deg, #db8bff 30%, #81deff)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent'
                 }}>
                     DevSo.Fun
                 </Display>
-                <div style={{ width: '30%' }}>
+                <div style={{ width: '30%', transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}>
                     <Input
                         placeholder="有问题尽管问我…"
                         size="large"
-                        style={{ width: '100%' }}
+                        style={{
+                            width: '100%',
+                        }}
                         contentBefore={<SearchButton aria-label="Search" onClick={handleSearch} />}
                         contentAfter={[
                             <MicButton aria-label="Enter by voice" />,
@@ -93,6 +95,14 @@ export default function HomePage() {
                             }
                         }}
                         value={searchTerm}
+                        onFocus={e => {
+                            e.target.parentElement.parentElement.style.width = '40%';
+                            console.log(e.target.parentElement.parentElement.style.width)
+                        }}
+                        onBlur={e => {
+                            e.target.parentElement.parentElement.style.width = '30%';
+                            console.log(e.target.parentElement.parentElement.style.width)
+                        }}
                     />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }} className={styles.wrapper}>

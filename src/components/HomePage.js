@@ -9,8 +9,10 @@ import {
     Input,
     Display,
 } from "@fluentui/react-components";
-import { MicRegular, Camera24Regular, Search24Regular, History16Regular, ArrowUpRight16Regular } from "@fluentui/react-icons";
+import { MicRegular, Camera24Regular, Search24Regular } from "@fluentui/react-icons";
 import { ThemeContext } from '../App';
+import { addSearchTermToHistory, getSearchHistory } from '../utils/searchHistory';
+import { SuggestionGroup } from '../utils/suggestionBox';
 
 const SearchButton = (props) => {
     return (
@@ -54,58 +56,11 @@ const useStyles = makeStyles({
     },
 });
 
-export function SingleSuggestion(type, text) {
-    return (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'left', marginTop: '-1px', width: '100%', textAlign: 'left' }}>
-            <Button
-                shape="square"
-                style={{ alignItems: 'left', justifyContent: 'left', width: '100%' }}
-                size="large"
-                icon={type === "history" ? <History16Regular /> : <ArrowUpRight16Regular />}
-            >
-                {text}
-            </Button>
-        </div>
-    );
-}
-
-export function SuggestionGroup(type, { suggestions }) {
-    return (
-        <div style={{ marginTop: '-15px', width: '40%', minWidth: '300px', animation: 'fadeIn 0.3s', transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)', textAlign: 'left' }}>
-            {suggestions.map((suggestion, index) => (
-                SingleSuggestion(type, suggestion)
-            ))}
-        </div>
-    );
-}
-
-// 当用户进行搜索时，将搜索词添加到localStorage中
-function addSearchTermToHistory(searchTerm) {
-    let searchHistory = localStorage.getItem('searchHistory');
-    if (searchHistory) {
-        searchHistory = JSON.parse(searchHistory);
-    } else {
-        searchHistory = [];
-    }
-    searchHistory.push(searchTerm);
-    localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
-}
-
-// 从localStorage中读取搜索历史
-function getSearchHistory() {
-    let searchHistory = localStorage.getItem('searchHistory');
-    if (searchHistory) {
-        searchHistory = JSON.parse(searchHistory);
-        return searchHistory.reverse();
-    } else {
-        return [];
-    }
-}
-
 export default function HomePage() {
     const styles = useStyles();
     const [searchTerm, setSearchTerm] = React.useState('');
     const [searchBoxOnFocus, setSearchBoxOnFocus] = React.useState(false);
+    const [suggestionBoxOnFocus, setSuggestionBoxOnFocus] = React.useState(false);
     const [suggestions, setSuggestions] = React.useState([]); // [ { type: "history", suggestions: ["test1", "test2", "test3"] } ]
     const theme = useContext(ThemeContext);
 
@@ -142,7 +97,7 @@ export default function HomePage() {
                 }}>
                     DevSo.Fun
                 </Display>
-                <div style={{ width: '30%', minWidth: '300px', transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative', zIndex: 2 }}>
+                <div style={{ width: '30%', minWidth: '350px', transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative', zIndex: 2 }}>
                     <Input
                         placeholder="有问题尽管问我…"
                         size="large"
@@ -177,18 +132,21 @@ export default function HomePage() {
                         position: 'absolute',
                         width: '100%',
                         zIndex: 1,
-                        display: searchBoxOnFocus ? 'flex' : 'none',
+                        display: (searchBoxOnFocus || suggestionBoxOnFocus) ? 'flex' : 'none',
                         justifyContent: 'center',
                         alignItems: 'center',
                         top: '100%',
-                        animation: searchBoxOnFocus ? 'fadeIn 0.3s' : 'none',
+                        animation: (searchBoxOnFocus || suggestionBoxOnFocus) ? 'fadeIn 0.3s' : 'none',
                         transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                         textAlign: 'left',
-                    }}>
+                    }}
+                        onMouseEnter={() => setSuggestionBoxOnFocus(true)}
+                        onMouseLeave={() => setSuggestionBoxOnFocus(false)}
+                    >
                         {
                             (searchTerm) ? (
                                 SuggestionGroup("suggestion", { suggestions: suggestions })
-                             ) : (
+                            ) : (
                                 SuggestionGroup("history", { suggestions: getSearchHistory() })
                             )
                         }

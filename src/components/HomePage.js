@@ -136,8 +136,6 @@ export default function HomePage() {
                         justifyContent: 'center',
                         alignItems: 'center',
                         top: '100%',
-                        animation: (searchBoxOnFocus || suggestionBoxOnFocus) ? 'fadeIn 0.3s' : 'none',
-                        transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                         textAlign: 'left',
                     }}
                         onMouseEnter={() => setSuggestionBoxOnFocus(true)}

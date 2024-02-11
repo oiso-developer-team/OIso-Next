@@ -32,6 +32,8 @@ import {
     ChevronDoubleRightRegular,
 } from "@fluentui/react-icons";
 import { ThemeContext } from '../App';
+import { addSearchTermToHistory, getSearchHistory } from '../utils/searchHistory';
+import { SuggestionGroup } from '../utils/suggestionBox';
 
 const useStyles = makeStyles({
     container: {
@@ -212,6 +214,26 @@ const SearchPage = () => {
     const [hasSearched, setHasSearched] = useState(false);
     const [loadStart, setLoadStart] = useState(0.0);
     const [timeSpent, setTimeSpent] = useState(0.0);
+    const [searchBoxOnFocus, setSearchBoxOnFocus] = React.useState(false);
+    const [suggestionBoxOnFocus, setSuggestionBoxOnFocus] = React.useState(false);
+    const [suggestions, setSuggestions] = React.useState([]);
+
+    useEffect(() => {
+        if (searchTerm) {
+            // Fetch search suggestions from the server
+            // and update the state with the suggestions
+            const url = `${process.env.REACT_APP_API_ENDPOINT}/suggestion?q=${searchTerm}`;
+            axios.get(url)
+                .then(response => {
+                    console.log(response.data);
+                    setSuggestions(response.data);
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        }
+    }, [searchTerm]);
+
     // 将请求参数里的q参数解码后赋值给searchTerm
     React.useEffect(() => {
         const url = new URL(window.location.href);
@@ -264,7 +286,7 @@ const SearchPage = () => {
 
 
     const General = React.memo(() => (
-        <div style={{ textAlign: "left" }}>
+        <div style={{ textAlign: "left", width: "100%", minWidth: "350px" }}>
             {searchResults.length === 0 ? (
                 <>
                     <div height='5px'></div>
@@ -322,7 +344,7 @@ const SearchPage = () => {
     return (
         <FluentProvider theme={theme}>
             <div className={styles.container}>
-                <div className={styles.searchContainer} style={{ width: '50%', transform: 'translateX(-48%)', marginTop: '15px' }}>
+                <div className={styles.searchContainer} style={{ width: '50%', transform: 'translateX(-48%)', marginTop: '15px', zIndex: 114 }}>
                     <Title3
                         font="numeric"
                         weight="bold"
@@ -339,24 +361,63 @@ const SearchPage = () => {
                         DevSo.Fun
                     </Title3>
                     <div style={{ minWidth: '20px' }} />
-                    <Input
-                        placeholder="有问题尽管问我…"
-                        size="large"
-                        style={{ width: '100%' }}
-                        contentBefore={<SearchButton aria-label="Search" onClick={handleSearch} />}
-                        contentAfter={[
-                            <MicButton aria-label="Enter by voice" />,
-                            <div style={{ width: '15px' }} />,
-                            <CamButton aria-label="Enter by keyboard" />
-                        ]}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        onKeyPress={e => {
-                            if (e.key === 'Enter') {
-                                handleSearch();
+                    <div style={{
+                        // display: "flex",
+                        // flexDirection: "column",
+                        // alignItems: "baseline",
+                    }}>
+                        <div style={{ width: '220%', minWidth: '250px' }}>
+                            <Input
+                                placeholder="有问题尽管问我…"
+                                size="large"
+                                style={{ width: '100%' }}
+                                contentBefore={<SearchButton aria-label="Search" onClick={handleSearch} />}
+                                contentAfter={[
+                                    <MicButton aria-label="Enter by voice" />,
+                                    <div style={{ width: '15px' }} />,
+                                    <CamButton aria-label="Enter by keyboard" />
+                                ]}
+                                onChange={e => setSearchTerm(e.target.value)}
+                                onKeyPress={e => {
+                                    if (e.key === 'Enter') {
+                                        handleSearch();
+                                    }
+                                }}
+                                value={searchTerm}
+                                onFocus={e => {
+                                    setSearchBoxOnFocus(true);
+                                }}
+                                onBlur={e => {
+                                    setSearchBoxOnFocus(false);
+                                }}
+                            />
+                        </div>
+                        <div style={{ position: 'relative', width: '220%', minWidth: '250px', marginTop: '1px' }}>
+                            {searchBoxOnFocus ?
+                                (
+                                    <div style={{
+                                        position: 'absolute',
+                                        width: '100%',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        // top: '100%',
+                                        textAlign: 'left',
+                                    }}
+                                        onMouseEnter={() => setSuggestionBoxOnFocus(true)}
+                                        onMouseLeave={() => setSuggestionBoxOnFocus(false)}
+                                 >
+                                        {
+                                            (searchTerm) ? (
+                                                SuggestionGroup("suggestion", { suggestions: suggestions }, { style: { width: '100%' } })
+                                            ) : (
+                                                SuggestionGroup("history", { suggestions: getSearchHistory() }, { style: { width: '100%' } })
+                                            )
+                                        }
+                                    </div>
+                                ) : null
                             }
-                        }}
-                        value={searchTerm}
-                    />
+                        </div>
+                    </div>
                 </div>
                 <div className={styles.root}>
                     <TabList selectedValue={selectedValue} onTabSelect={onTabSelect} appearance="subtle">

@@ -27,18 +27,18 @@ function ThemeProvider({ children }) {
 const App = () => {
   return (
     <ThemeProvider>
-      <Router>
-        <div>
-          <Switch>
-            <Route exact path="/">
-              <HomePage />
-            </Route>
-            <Route path="/search">
-              <SearchPage />
-            </Route>
-          </Switch>
-        </div>
-      </Router>
+        <Router>
+          <div>
+            <Switch>
+              <Route exact path="/">
+                <HomePage />
+              </Route>
+              <Route path="/search">
+                <SearchPage />
+              </Route>
+            </Switch>
+          </div>
+        </Router>
     </ThemeProvider>
   );
 };

@@ -1,15 +1,20 @@
+import React, { useContext } from 'react';
 import {
-    Button
+    Button,
+    webDarkTheme,
 } from "@fluentui/react-components";
 import { History16Regular, ArrowUpRight16Regular, Dismiss16Regular } from "@fluentui/react-icons";
 import { addSearchTermToHistory, removeSearchTermFromHistory } from './searchHistory';
+import { ThemeContext } from '../App';
 
 function SingleSuggestion(type, text) {
+    const theme = useContext(ThemeContext);
+
     return (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'left', marginTop: '-1px', width: '100%', textAlign: 'left' }}>
             <Button
                 shape="square"
-                style={{ alignItems: 'left', justifyContent: 'left', width: '100%' }}
+                style={{ alignItems: 'left', justifyContent: 'left', width: '100%', background: theme === webDarkTheme ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(10px)' }}
                 size="large"
                 icon={type === "history" ? <History16Regular /> : <ArrowUpRight16Regular />}
                 onClick={(event) => {

@@ -87,6 +87,10 @@ export default function HomePage() {
         const searchUrl = '/search?q=' + encodeURIComponent(searchTerm);
         window.location.href = searchUrl;
     };
+    
+    const openMemos = () => {
+        window.open("https://note.devso.fun/");
+    };
 
     return (
         <FluentProvider theme={theme}>
@@ -164,7 +168,7 @@ export default function HomePage() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }} className={styles.wrapper}>
                         <Button style={{ fontWeight: 'normal', background: theme === webDarkTheme ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.5)', backdropFilter: 'blur(10px)' }} size="medium">开发搜</Button>
                         <div style={{ width: '15px' }} />
-                        <Button style={{ fontWeight: 'normal', background: theme === webDarkTheme ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.5)', backdropFilter: 'blur(10px)' }} size="medium" onClick={window.open("https://note.devso.fun/")}>云便签</Button>
+                        <Button style={{ fontWeight: 'normal', background: theme === webDarkTheme ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.5)', backdropFilter: 'blur(10px)' }} size="medium" onClick={openMemos}>云便签</Button>
                     </div>
                 </div>
             </div>
